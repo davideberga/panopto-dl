@@ -11,6 +11,8 @@ from rich.progress import track
 import validators
 import selenium
 import time
+from moviepy.editor import *
+from os import listdir
 
 import logging
 from rich.logging import RichHandler
@@ -109,8 +111,16 @@ def downloadfile(name, url):
     else:
         log.error(url + " request error")
         return False
-    log.info(name + " downloaded corectly!")
+    log.info(name + " downloaded correctly!")
     return True
+
+def split_screen(finalPath, pathVideo1, pathVideo2):
+    left = VideoFileClip(pathVideo1)
+    right = VideoFileClip(pathVideo2)
+
+    d = clips_array([[left,right]])
+
+    d.write_videofile(finalPath)
 
 outputPath = "./panopto-lectures"
 if not os.path.exists(outputPath):
@@ -132,6 +142,12 @@ with ThreadPoolExecutor(max_workers=4) as executor:
             data = future.result()
         except Exception as exc:
             print('%r generated an exception: %s' % (url, exc))
+
+log.info("Create split screen video")
+for folder in listdir(outputPath):
+    files = listdir(os.path.join(outputPath, folder))
+    if len(files) == 2:
+        split_screen(os.path.join(outputPath, folder, folder + ".mp4"), os.path.join(outputPath, folder, files[0]), os.path.join(outputPath, folder, files[1]))
 
 log.info("[bold green blink]Done![/]", extra={ "markup" : True})
 
