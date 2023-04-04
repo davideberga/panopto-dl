@@ -94,8 +94,6 @@ for video in track(urlsVideos.keys(), description="Scraping..."):
             panoptoConfigObj = json.loads(panoptoConfigObj.replace("\\/", "/"))
 
             videos[video] = dict()
-            print(panoptoConfigObj["VideoUrl"])
-            print(panoptoConfigObj)
             videos[video]['embed'] = panoptoConfigObj["VideoUrl"]
             # videos[video]['embed'] = secondaryUrl
     except selenium.common.exceptions.NoSuchElementException as e:
@@ -109,17 +107,22 @@ def downloadfile(name, url):
 
     if not validators.url(url):
         return False
+    log.info("start downloading {}".format(name))
+
     try:
         urllib.request.urlretrieve(url, name)
     except:
         log.error(url + " request error")
         return False
-    log.info(name + " downloaded correctly!")
+    
+    log.info("{} downloaded correctly!".format(name))
     return True
 
 outputPath = "./panopto-lectures"
 if not os.path.exists(outputPath):
     os.makedirs(outputPath)
+
+browser.close()
 
 # Create paths if not exists
 for video in videos:
