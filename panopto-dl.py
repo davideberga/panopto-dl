@@ -11,7 +11,9 @@ from rich.progress import track
 import validators
 import selenium
 import time
-from moviepy.editor import *
+import re
+import json
+import urllib.request
 from os import listdir
 
 import logging
@@ -68,7 +70,9 @@ urlsVideos = dict()
 for match in WebDriverWait(browser, 20).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".detail-title"))):
     try:
         key = match.find_element(By.TAG_NAME, "span").text
-        urlsVideos[key] = match.get_attribute("href")  
+        url_video = str(match.get_attribute("href"))
+        url_video = url_video.replace("Viewer", "Embed")
+        urlsVideos[key] = url_video
     except selenium.common.exceptions.NoSuchElementException as e:
         pass
 
@@ -81,17 +85,21 @@ log.info("Collecting pure video urls without login ... be patient")
 videos = dict()
 for video in track(urlsVideos.keys(), description="Scraping..."):
     try:
-        if urlsVideos[video] != None:
+        print(urlsVideos[video])
+        if validators.url(urlsVideos[video]):
             browser.get(urlsVideos[video])
-            time.sleep(2)
-            primaryUrl = browser.find_element(By.ID, 'primaryVideo').get_attribute("src")
-            secondaryUrl = browser.find_element(By.ID, 'secondaryVideo').get_attribute("src")
+            source = browser.page_source
+            time.sleep(1)
+            panoptoConfigObj = re.search(r"PanoptoTS.Embed.EmbeddedViewer\((\{.*\}).*\)", source).group(1)
+            panoptoConfigObj = json.loads(panoptoConfigObj.replace("\\/", "/"))
 
             videos[video] = dict()
-
-            videos[video]['primary'] = primaryUrl
-            videos[video]['secondary'] = secondaryUrl
+            print(panoptoConfigObj["VideoUrl"])
+            print(panoptoConfigObj)
+            videos[video]['embed'] = panoptoConfigObj["VideoUrl"]
+            # videos[video]['embed'] = secondaryUrl
     except selenium.common.exceptions.NoSuchElementException as e:
+        log.error(e)
         pass
 
 import os
@@ -101,26 +109,13 @@ def downloadfile(name, url):
 
     if not validators.url(url):
         return False
-
-    r = requests.get(url)
-    if r.status_code >= 200 and r.status_code <= 210:
-        with open(name,'wb') as file:
-            for chunk in r.iter_content(chunk_size=255): 
-                if chunk: # filter out keep-alive new chunks
-                    file.write(chunk)
-    else:
+    try:
+        urllib.request.urlretrieve(url, name)
+    except:
         log.error(url + " request error")
         return False
     log.info(name + " downloaded correctly!")
     return True
-
-def split_screen(finalPath, pathVideo1, pathVideo2):
-    left = VideoFileClip(pathVideo1)
-    right = VideoFileClip(pathVideo2)
-
-    d = clips_array([[left,right]])
-
-    d.write_videofile(finalPath)
 
 outputPath = "./panopto-lectures"
 if not os.path.exists(outputPath):
@@ -134,20 +129,13 @@ for video in videos:
 log.info("Start downloading videos")
 with ThreadPoolExecutor(max_workers=4) as executor:
 
-    future_download = [executor.submit(downloadfile, os.path.join(outputPath, video, "primary"), videos[video]['primary']) for video in videos]
-    future_download += [executor.submit(downloadfile, os.path.join(outputPath, video, "secondary"), videos[video]['secondary']) for video in videos]
+    future_download = [executor.submit(downloadfile, os.path.join(outputPath, video, "complete"), videos[video]['embed']) for video in videos]
     
     for future in track(as_completed(future_download), description="Downloading..."):
         try:
             data = future.result()
         except Exception as exc:
             print('%r generated an exception: %s' % (url, exc))
-
-log.info("Create split screen video")
-for folder in listdir(outputPath):
-    files = listdir(os.path.join(outputPath, folder))
-    if len(files) == 2:
-        split_screen(os.path.join(outputPath, folder, folder + ".mp4"), os.path.join(outputPath, folder, files[0]), os.path.join(outputPath, folder, files[1]))
 
 log.info("[bold green blink]Done![/]", extra={ "markup" : True})
 
