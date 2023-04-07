@@ -14,13 +14,13 @@ class LoginUnivr(LoginExecutor):
     
     def login(self, username: str, password: str) -> bool:
         try:
-            userInputLogin = self.browser.find_element(By.ID, 'form_username')
-            idPwdLogin = self.browser.find_element(By.ID, 'form_password')
-            idSubmitLogin = self.browser.find_element(By.CSS_SELECTOR, '.btn-login')
+            user_input_login = self.browser.find_element(By.ID, 'form_username')
+            id_pwd_login = self.browser.find_element(By.ID, 'form_password')
+            id_submit_login = self.browser.find_element(By.CSS_SELECTOR, '.btn-login')
 
-            userInputLogin.send_keys(username)
-            idPwdLogin.send_keys(password)
-            idSubmitLogin.click()
+            user_input_login.send_keys(username)
+            id_pwd_login.send_keys(password)
+            id_submit_login.click()
         except Exception as e:
             self.logger.error(f"Unespected error during login {e}")
             return False
