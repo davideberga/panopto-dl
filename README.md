@@ -1,9 +1,30 @@
-# panopto-downloader
+# Panopto downloader
+
+Simple utility to download in "bastch mode" videos from an entire folder/course on panopto. Currently supports only the UNIVR sso login, but is easily extensible.
+
+## Requirements
+
+- Anaconda (raccomended for installation only)
+- Google Chrome installed on your system, internally this script uses [Selenium](https://www.selenium.dev/documentation/) with the google chrtome web driver.
+
+## Installation and usage
+
+``` conda env create -f environment.yaml ``` to install the required dependecies.
+
+Basic usage: ``` python3 panopto-dl.py -url <FOLDER_URL> -u <GIA_USERNAME>``` 
+
+I don't know who has had the smart idea to put double quotes in `<FOLDER_URL>` query string so remeember to escape the url. In this way: `https://univr.cloud.panopto.eu/Panopto/Pages/Sessions/List.aspx#folderID=\"1bd8examplea2fa90\"`
 
 
+To see all the options: ` python3 panopto-dl.py -h `
 
-## Getting started
+## Extensibility
 
-```
-{'Lecture 21.3.23': 'https://univr.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=31aa16ef-6171-4eb3-94e9-afcc00bf19ee', 'Lecture 16.3.23': 'https://univr.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=b9f0173a-8b48-4451-8b88-afc7010776da', 'Lecture 14.3.2023': 'https://univr.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=73302c7c-147b-410b-ab95-afc500bec0ae', 'Lecture 9.3.2023': 'https://univr.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=bc5af698-f4bd-4cd2-bb33-afc00103057e', 'Lecture 7.3.2023': 'https://univr.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=78651b60-a6fd-4651-928e-afbe00bda2cf', '': None}
-```
+Currently sso login types supported:
+
+[X] Univr
+
+
+***<!-- This repository is mirrorred from my own personal gitlab instance, it is possible tha is not update ->***
+
+
