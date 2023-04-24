@@ -25,7 +25,9 @@ Currently sso login types supported:
 
 ## Disclaimer
 
-Only for pernal usage. This is not related in any way to panopto.
+Only for personal usage. This is not related in any way to panopto.
+
+
 ***<!-- This repository is mirrorred from a repository hosted on my own personal gitlab instance, it is possible that is not up-to-date to the last commit ->***
 
 
